@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BrowserOS</string>
+    <string name="settings">设置</string>
+    <string name="ai_chat">AI 对话</string>
+    <string name="url_hint">输入网址或搜索内容</string>
+    <string name="back">后退</string>
+    <string name="forward">前进</string>
+    <string name="refresh">刷新</string>
+    <string name="home">主页</string>
+    <string name="ai">AI</string>
+    <string name="tabs">标签页</string>
+    <string name="loading">加载中...</string>
+    <string name="error_loading">加载失败</string>
+    <string name="no_history">暂无历史记录</string>
+    <string name="clear_history">清除历史记录</string>
+    <string name="clear_all_data">清除所有数据</string>
+    <string name="api_key_settings">API 密钥设置</string>
+    <string name="openai_api_key">OpenAI API 密钥</string>
+    <string name="anthropic_api_key">Anthropic API 密钥</string>
+    <string name="ollama_url">Ollama 服务器地址</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    <string name="privacy">隐私</string>
+    <string name="data_size">数据大小</string>
+
+    <string name="menu_title">BrowserOS 控制中心</string>
+    <string name="menu_subtitle">核心功能</string>
+    <string name="menu_history">历史记录</string>
+    <string name="menu_history_desc">回顾浏览足迹</string>
+    <string name="menu_refresh">刷新</string>
+    <string name="menu_refresh_desc">重新加载当前页面</string>
+    <string name="menu_downloads">下载历史</string>
+    <string name="menu_downloads_desc">查看文件记录</string>
+    <string name="menu_desktop">桌面模式</string>
+    <string name="menu_desktop_desc">切换视图比例</string>
+    <string name="menu_add_bookmark">添加书签</string>
+    <string name="menu_add_bookmark_desc">收藏当前页面</string>
+    <string name="menu_bookmarks">书签</string>
+    <string name="menu_bookmarks_desc">管理收藏</string>
+    <string name="menu_home">返回主页</string>
+    <string name="menu_home_desc">回到默认起点</string>
+    <string name="menu_back">上一页</string>
+    <string name="menu_back_desc">回到上一步</string>
+    <string name="menu_settings">设置</string>
+    <string name="menu_settings_desc">偏好与密钥</string>
+
+    <string name="ai_panel_title">BrowserOS AI</string>
+    <string name="ai_panel_subtitle">多模态控制中心</string>
+    <string name="ai_input_hint">例如：打开 https://browseros.app</string>
+
+    <string name="toast_bookmark_added">已添加到书签</string>
+    <string name="toast_no_bookmarks">暂无书签，先收藏一个页面吧</string>
+    <string name="toast_desktop_on">已切换到桌面模式预览</string>
+    <string name="toast_desktop_off">已切换回移动模式</string>
+    <string name="toast_history_empty">暂无历史记录</string>
+    <string name="toast_ai_unavailable">AI 服务未配置，请先在设置中添加 API 密钥或使用本地模型</string>
+    <string name="toast_downloads_unavailable">请稍后在系统下载管理器中查看历史</string>
+    <string name="toast_no_previous_page">没有可后退的页面</string>
+    <string name="toast_no_forward_page">没有可前进的页面</string>
+
+    <string name="ai_placeholder_hint">我可以搜索信息、打开网站或操作当前页面</string>
+    <string name="ai_welcome">你好，我是 BrowserOS AI，可以帮你打开网站、搜索内容、刷新页面或直接返回主页，也可以按指令完成表单填写、跳转链接等操作。</string>
+    <string name="ai_thinking">正在思考...</string>
+
+    <string name="dialog_history_title">历史记录</string>
+    <string name="dialog_bookmarks_title">书签</string>
+    <string name="dialog_empty_state">暂无数据</string>
+    <string name="dialog_open">打开</string>
+
+    <string name="ai_connected_openai">已连接 OpenAI，随时可以开始。</string>
+    <string name="ai_connected_anthropic">已连接 Anthropic Claude。</string>
+    <string name="ai_connected_ollama">正在尝试连接本地 Ollama：%1$s</string>
+    <string name="ai_opening_url">正在为你打开 %1$s</string>
+    <string name="ai_searching_query">已搜索 “%1$s”。</string>
+    <string name="ai_refreshed">已经刷新当前页面。</string>
+    <string name="ai_home">正在返回主页。</string>
+    <string name="ai_back_success">已返回上一页。</string>
+    <string name="ai_back_fail">没有更多可返回的页面。</string>
+    <string name="ai_forward_success">已前往下一页。</string>
+    <string name="ai_forward_fail">没有更多可前进的页面。</string>
+    <string name="ai_new_tab_with_url">已在新标签打开 %1$s。</string>
+    <string name="ai_new_tab_blank">已创建新的空白标签。</string>
+    <string name="ai_switch_tab_success">已切换到第 %1$d 个标签。</string>
+    <string name="ai_switch_tab_fail">没有找到第 %1$d 个标签。</string>
+    <string name="ai_switch_tab_fail_generic">无法识别要切换的标签。</string>
+    <string name="ai_close_tab_success">已关闭当前标签。</string>
+    <string name="ai_close_tab_fail">当前没有可关闭的标签。</string>
+    <string name="ai_scroll_down">正在向下滚动页面。</string>
+    <string name="ai_scroll_up">正在向上滚动页面。</string>
+    <string name="ai_stop_loading">已停止加载当前页面。</string>
+    <string name="ai_bookmark_added_from_ai">已尝试收藏当前页面。</string>
+    <string name="ai_error_message">错误：%1$s</string>
+
+    <string name="chip_refresh">刷新</string>
+    <string name="chip_back">后退</string>
+    <string name="chip_forward">前进</string>
+    <string name="chip_new_tab">新标签</string>
+    <string name="chip_desktop">桌面模式</string>
+    <string name="chip_mobile_mode">移动模式</string>
+    <string name="chip_scroll_down">下移</string>
+    <string name="chip_scroll_up">上移</string>
+</resources>

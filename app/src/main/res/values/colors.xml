@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#1A8CA8</color>
+    <color name="colorPrimaryDark">#0E5F73</color>
+    <color name="colorAccent">#2AA382</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surfaceAlt">#F4F7F8</color>
+    <color name="textPrimary">#0F172A</color>
+    <color name="textSecondary">#4C5C68</color>
+    <color name="dividerSoft">#1A2E3612</color>
+    <color name="overlayDark">#990C1820</color>
+    <color name="chipBackground">#E5F2F4</color>
+    <color name="chipStroke">#1A8CA826</color>
+</resources>
+

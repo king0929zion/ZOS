@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- API 密钥设置 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/api_key_settings"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- OpenAI API 密钥 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/openai_api_key"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/openai_key_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入 OpenAI API 密钥"
+            android:inputType="textPassword"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Anthropic API 密钥 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/anthropic_api_key"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/anthropic_key_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入 Anthropic API 密钥"
+            android:inputType="textPassword"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Ollama URL -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ollama_url"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/ollama_url_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="http://localhost:11434"
+            android:inputType="textUri"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 隐私设置 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/privacy"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 数据大小 -->
+        <TextView
+            android:id="@+id/data_size_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/data_size"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 清除历史记录 -->
+        <Button
+            android:id="@+id/clear_history_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clear_history"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 清除所有数据 -->
+        <Button
+            android:id="@+id/clear_all_data_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clear_all_data"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 保存按钮 -->
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save" />
+
+    </LinearLayout>
+
+</ScrollView>
+
