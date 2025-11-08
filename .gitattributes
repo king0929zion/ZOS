@@ -1,0 +1,10 @@
+# 确保Java文件使用UTF-8编码（无BOM）
+*.java text eol=lf charset=utf-8
+
+# 其他文本文件
+*.xml text eol=lf charset=utf-8
+*.gradle text eol=lf charset=utf-8
+*.properties text eol=lf charset=utf-8
+*.md text eol=lf charset=utf-8
+*.txt text eol=lf charset=utf-8
+
