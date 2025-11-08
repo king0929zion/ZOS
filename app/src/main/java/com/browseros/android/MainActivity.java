@@ -837,6 +837,10 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
     }
     
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+    
     /**
      * 切换无痕浏览模式
      */
@@ -892,7 +896,7 @@ public class MainActivity extends AppCompatActivity {
                         webView.setFindListener((activeMatchOrdinal, numberOfMatches, isDoneCounting) -> {
                             if (isDoneCounting && numberOfMatches > 0) {
                                 webView.findNext(true);
-                                showToast(getString(R.string.find_results, Integer.valueOf(activeMatchOrdinal + 1), Integer.valueOf(numberOfMatches)));
+                                showToast(getString(R.string.find_results, activeMatchOrdinal + 1, numberOfMatches));
                             } else if (isDoneCounting && numberOfMatches == 0) {
                                 showToast(R.string.find_no_results);
                             }
