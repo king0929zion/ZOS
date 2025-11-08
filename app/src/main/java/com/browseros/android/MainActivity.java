@@ -1,4 +1,4 @@
-ackage com.browseros.android;
+package com.browseros.android;
 
 import android.app.DownloadManager;
 import android.content.Intent;
