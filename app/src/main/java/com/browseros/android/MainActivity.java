@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -103,9 +104,14 @@ public class MainActivity extends AppCompatActivity {
         setupQuickActions();
         initializeBrowser();
 
-        tabManager.createTab(DEFAULT_HOME);
-        updateWebView();
-        ensureAiWelcomeMessage();
+        try {
+            tabManager.createTab(DEFAULT_HOME);
+            updateWebView();
+            ensureAiWelcomeMessage();
+        } catch (Exception e) {
+            Log.e("MainActivity", "初始化浏览器失败", e);
+            showToast(getString(R.string.error_loading));
+        }
     }
 
     private void initializeViews() {
