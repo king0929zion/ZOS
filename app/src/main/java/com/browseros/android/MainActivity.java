@@ -953,9 +953,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        
+        // 清理 WebView 资源，防止内存泄漏
+        if (webView != null) {
+            webView.onPause();
+            webView.removeAllViews();
+            webView.destroyDrawingCache();
+            webView.destroy();
+            webView = null;
+        }
+        
+        // 关闭所有标签页
         if (tabManager != null) {
             tabManager.closeAllTabs();
+            tabManager = null;
         }
+        
+        // 清理其他引用
+        browserEngine = null;
+        aiService = null;
+        agentExecutor = null;
+        agentToolManager = null;
+        contentExtractor = null;
+        dataManager = null;
+        bookmarkManager = null;
+        secureStorage = null;
     }
 
     private enum MenuActionType {

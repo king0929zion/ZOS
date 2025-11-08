@@ -32,6 +32,24 @@ public class AnthropicProvider implements AIService {
     private OkHttpClient httpClient;
     private Gson gson;
     
+    // 单例 OkHttpClient，减少资源消耗
+    private static OkHttpClient sharedHttpClient;
+    
+    /**
+     * 获取共享的 OkHttpClient 实例
+     * @return OkHttpClient 实例
+     */
+    private static synchronized OkHttpClient getSharedHttpClient() {
+        if (sharedHttpClient == null) {
+            sharedHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .retryOnConnectionFailure(true) // 添加连接失败重试
+                    .build();
+        }
+        return sharedHttpClient;
+    }
+    
     /**
      * 构造函数
      * @param apiKey Anthropic API 密钥
@@ -48,10 +66,7 @@ public class AnthropicProvider implements AIService {
     public AnthropicProvider(String apiKey, String model) {
         this.apiKey = apiKey;
         this.model = model;
-        this.httpClient = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .build();
+        this.httpClient = getSharedHttpClient(); // 使用共享的 OkHttpClient 实例
         this.gson = new Gson();
     }
     

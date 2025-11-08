@@ -35,6 +35,24 @@ public class OpenAIProvider implements AIService {
     private OkHttpClient httpClient;
     private Gson gson;
     
+    // 单例 OkHttpClient，减少资源消耗
+    private static OkHttpClient sharedHttpClient;
+    
+    /**
+     * 获取共享的 OkHttpClient 实例
+     * @return OkHttpClient 实例
+     */
+    private static synchronized OkHttpClient getSharedHttpClient() {
+        if (sharedHttpClient == null) {
+            sharedHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .retryOnConnectionFailure(true) // 添加连接失败重试
+                    .build();
+        }
+        return sharedHttpClient;
+    }
+    
     /**
      * 构造函数（使用默认URL和模型）
      * @param apiKey API 密钥
@@ -73,10 +91,7 @@ public class OpenAIProvider implements AIService {
             this.apiUrl = DEFAULT_API_URL;
         }
         this.model = (model != null && !model.isEmpty()) ? model : DEFAULT_MODEL;
-        this.httpClient = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .build();
+        this.httpClient = getSharedHttpClient(); // 使用共享的 OkHttpClient 实例
         this.gson = new Gson();
     }
     
