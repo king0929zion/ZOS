@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     private static final String DEFAULT_HOME = "https://www.google.com";
+    private static final String DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
     private static final Pattern NUMBER_PATTERN = Pattern.compile("(\\d+)");
 
     private EditText addressInput;
@@ -491,6 +492,10 @@ public class MainActivity extends AppCompatActivity {
             mobileUserAgent = settings.getUserAgentString();
         }
         settings.setUserAgentString(isDesktopMode ? DESKTOP_UA : mobileUserAgent);
+    }
+
+    private void initializeBrowser() {
+        tabManager = new TabManager(this);
     }
 
     private void updateBrowserEngine() {
