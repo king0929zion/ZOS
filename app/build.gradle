@@ -2,6 +2,13 @@ plugins {
     id 'com.android.application'
 }
 
+// 加载签名配置
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace 'com.browseros.android'
     compileSdk 34
@@ -18,13 +25,21 @@ android {
 
     signingConfigs {
         release {
-            // 签名配置从环境变量或 gradle.properties 读取
-            // 本地开发：在 gradle.properties 中配置
-            // CI/CD：通过环境变量传递
-            storeFile file(System.getenv("KEYSTORE_FILE") ?: project.findProperty("KEYSTORE_FILE") ?: "release.keystore")
-            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") ?: ""
-            keyAlias System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") ?: "browseros"
-            keyPassword System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") ?: ""
+            // 签名配置优先级：
+            // 1. 环境变量（CI/CD）
+            // 2. keystore.properties 文件（本地开发）
+            // 3. 默认值（如果未配置，构建会失败但不会报错）
+            def keystoreFile = System.getenv("KEYSTORE_FILE") ?: keystoreProperties['KEYSTORE_FILE'] ?: "release.keystore"
+            def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties['KEYSTORE_PASSWORD'] ?: ""
+            def keyAliasName = System.getenv("KEY_ALIAS") ?: keystoreProperties['KEY_ALIAS'] ?: "browseros"
+            def keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties['KEY_PASSWORD'] ?: ""
+            
+            if (keystorePassword && keyPassword) {
+                storeFile file(keystoreFile)
+                storePassword keystorePassword
+                keyAlias keyAliasName
+                keyPassword keyPassword
+            }
         }
     }
 
