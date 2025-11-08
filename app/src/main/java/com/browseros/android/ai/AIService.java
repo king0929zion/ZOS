@@ -62,6 +62,15 @@ public interface AIService {
          * @param error 错误信息
          */
         void onError(String error);
+        
+        /**
+         * 工具调用回调（可选）
+         * @param toolName 工具名称
+         * @param arguments 工具参数（JSON字符串）
+         */
+        default void onToolCall(String toolName, String arguments) {
+            // 默认实现：不做任何处理
+        }
     }
 }
 

@@ -1,0 +1,325 @@
+warning: in the working copy of 'app/src/main/java/com/browseros/android/ai/OpenAIProvider.java', CRLF will be replaced by LF the next time Git touches it
+[1mdiff --git a/app/src/main/java/com/browseros/android/ai/OpenAIProvider.java b/app/src/main/java/com/browseros/android/ai/OpenAIProvider.java[m
+[1mindex d57dafa..2a0ee87 100644[m
+[1m--- a/app/src/main/java/com/browseros/android/ai/OpenAIProvider.java[m
+[1m+++ b/app/src/main/java/com/browseros/android/ai/OpenAIProvider.java[m
+[36m@@ -1,336 +1,337 @@[m
+[31m-package com.browseros.android.ai;[m
+[31m-[m
+[31m-import android.util.Log;[m
+[31m-[m
+[31m-import com.google.gson.Gson;[m
+[31m-import com.google.gson.JsonObject;[m
+[31m-[m
+[31m-import java.io.IOException;[m
+[31m-import java.util.concurrent.TimeUnit;[m
+[31m-[m
+[31m-import okhttp3.Call;[m
+[31m-import okhttp3.Callback;[m
+[31m-import okhttp3.MediaType;[m
+[31m-import okhttp3.OkHttpClient;[m
+[31m-import okhttp3.Request;[m
+[31m-import okhttp3.RequestBody;[m
+[31m-import okhttp3.Response;[m
+[31m-[m
+[31m-/**[m
+[31m- * OpenAI API 提供者[m
+[31m- * 实现 OpenAI 规范的 AI 服务，支持所有兼容 OpenAI API 的模型[m
+[31m- * 支持自定义 API URL 和模型名称[m
+[31m- * [m
+[31m- * @author BrowserOS Team[m
+[31m- */[m
+[31m-public class OpenAIProvider implements AIService {[m
+[31m-    private static final String TAG = "OpenAIProvider";[m
+[31m-    private static final String DEFAULT_API_URL = "https://api.openai.com/v1/chat/completions";[m
+[31m-    private static final String DEFAULT_MODEL = "gpt-3.5-turbo";[m
+[31m-    private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");[m
+[31m-    [m
+[31m-    private String apiKey;[m
+[31m-    private String apiUrl;[m
+[31m-    private String model;[m
+[31m-    private OkHttpClient httpClient;[m
+[31m-    private Gson gson;[m
+[31m-    [m
+[31m-    // 单例 OkHttpClient，减少资源消耗[m
+[31m-    private static OkHttpClient sharedHttpClient;[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 获取共享的 OkHttpClient 实例[m
+[31m-     * @return OkHttpClient 实例[m
+[31m-     */[m
+[31m-    private static synchronized OkHttpClient getSharedHttpClient() {[m
+[31m-        if (sharedHttpClient == null) {[m
+[31m-            sharedHttpClient = new OkHttpClient.Builder()[m
+[31m-                    .connectTimeout(30, TimeUnit.SECONDS)[m
+[31m-                    .readTimeout(60, TimeUnit.SECONDS)[m
+[31m-                    .retryOnConnectionFailure(true) // 添加连接失败重试[m
+[31m-                    .build();[m
+[31m-        }[m
+[31m-        return sharedHttpClient;[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 构造函数（使用默认URL和模型）[m
+[31m-     * @param apiKey API 密钥[m
+[31m-     */[m
+[31m-    public OpenAIProvider(String apiKey) {[m
+[31m-        this(apiKey, DEFAULT_API_URL, DEFAULT_MODEL);[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 构造函数（使用默认URL）[m
+[31m-     * @param apiKey API 密钥[m
+[31m-     * @param model 使用的模型名称（如 gpt-4, gpt-3.5-turbo, claude-3-sonnet 等）[m
+[31m-     */[m
+[31m-    public OpenAIProvider(String apiKey, String model) {[m
+[31m-        this(apiKey, DEFAULT_API_URL, model);[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 完整构造函数（支持自定义URL和模型）[m
+[31m-     * @param apiKey API 密钥[m
+[31m-     * @param apiUrl API 端点URL（如 https://api.openai.com/v1/chat/completions 或自定义URL）[m
+[31m-     * @param model 使用的模型名称（支持所有OpenAI规范的模型）[m
+[31m-     */[m
+[31m-    public OpenAIProvider(String apiKey, String apiUrl, String model) {[m
+[31m-        this.apiKey = apiKey;[m
+[31m-        // 如果URL不包含完整路径，自动添加 /v1/chat/completions[m
+[31m-        if (apiUrl != null && !apiUrl.isEmpty()) {[m
+[31m-            if (!apiUrl.contains("/chat/completions") && !apiUrl.contains("/v1/")) {[m
+[31m-                // 移除末尾的斜杠[m
+[31m-                String baseUrl = apiUrl.endsWith("/") ? apiUrl.substring(0, apiUrl.length() - 1) : apiUrl;[m
+[31m-                this.apiUrl = baseUrl + "/v1/chat/completions";[m
+[31m-            } else {[m
+[31m-                this.apiUrl = apiUrl;[m
+[31m-            }[m
+[31m-        } else {[m
+[31m-            this.apiUrl = DEFAULT_API_URL;[m
+[31m-        }[m
+[31m-        this.model = (model != null && !model.isEmpty()) ? model : DEFAULT_MODEL;[m
+[31m-        this.httpClient = getSharedHttpClient(); // 使用共享的 OkHttpClient 实例[m
+[31m-        this.gson = new Gson();[m
+[31m-    }[m
+[31m-    [m
+[31m-    @Override[m
+[31m-    public void chat(String message, AICallback callback) {[m
+[31m-        if (apiKey == null || apiKey.isEmpty()) {[m
+[31m-            callback.onError("OpenAI API 密钥未配置");[m
+[31m-            return;[m
+[31m-        }[m
+[31m-        [m
+[31m-        try {[m
+[31m-            // 构建请求体[m
+[31m-            JsonObject requestBody = new JsonObject();[m
+[31m-            requestBody.addProperty("model", model);[m
+[31m-            requestBody.addProperty("temperature", 0.7);[m
+[31m-            [m
+[31m-            JsonObject messageObj = new JsonObject();[m
+[31m-            messageObj.addProperty("role", "user");[m
+[31m-            messageObj.addProperty("content", message);[m
+[31m-            [m
+[31m-            JsonObject[] messages = new JsonObject[]{messageObj};[m
+[31m-            requestBody.add("messages", gson.toJsonTree(messages).getAsJsonArray());[m
+[31m-            [m
+[31m-            // 创建请求[m
+[31m-            RequestBody body = RequestBody.create([m
+[31m-                    gson.toJson(requestBody), JSON);[m
+[31m-            [m
+[31m-            Request request = new Request.Builder()[m
+[31m-                    .url(apiUrl)[m
+[31m-                    .addHeader("Authorization", "Bearer " + apiKey)[m
+[31m-                    .addHeader("Content-Type", "application/json")[m
+[31m-                    .post(body)[m
+[31m-                    .build();[m
+[31m-            [m
+[31m-            // 发送请求[m
+[31m-            httpClient.newCall(request).enqueue(new Callback() {[m
+[31m-                @Override[m
+[31m-                public void onFailure(Call call, IOException e) {[m
+[31m-                    Log.e(TAG, "OpenAI API 请求失败", e);[m
+[31m-                    callback.onError("网络错误: " + e.getMessage());[m
+[31m-                }[m
+[31m-                [m
+[31m-                @Override[m
+[31m-                public void onResponse(Call call, Response response) throws IOException {[m
+[31m-                    if (!response.isSuccessful()) {[m
+[31m-                        String errorBody = response.body() != null ? response.body().string() : "未知错误";[m
+[31m-                        Log.e(TAG, "OpenAI API 错误: " + response.code() + " - " + errorBody);[m
+[31m-                        callback.onError("API 错误: " + response.code());[m
+[31m-                        return;[m
+[31m-                    }[m
+[31m-                    [m
+[31m-                    String responseBody = response.body().string();[m
+[31m-                    try {[m
+[31m-                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);[m
+[31m-                        String content = jsonResponse.getAsJsonArray("choices")[m
+[31m-                                .get(0).getAsJsonObject()[m
+[31m-                                .getAsJsonObject("message")[m
+[31m-                                .get("content").getAsString();[m
+[31m-                        [m
+[31m-                        callback.onSuccess(content);[m
+[31m-                    } catch (Exception e) {[m
+[31m-                        Log.e(TAG, "解析响应失败", e);[m
+[31m-                        callback.onError("解析响应失败: " + e.getMessage());[m
+[31m-                    }[m
+[31m-                }[m
+[31m-            });[m
+[31m-        } catch (Exception e) {[m
+[31m-            Log.e(TAG, "构建请求失败", e);[m
+[31m-            callback.onError("请求构建失败: " + e.getMessage());[m
+[31m-        }[m
+[31m-    }[m
+[31m-    [m
+[31m-    @Override[m
+[31m-    public void analyzePage(String url, AICallback callback) {[m
+[31m-        String prompt = "请分析这个网页的内容和结构: " + url + [m
+[31m-                "\n请提供网页的主要信息、主题和关键内容摘要。";[m
+[31m-        chat(prompt, callback);[m
+[31m-    }[m
+[31m-    [m
+[31m-    @Override[m
+[31m-    public void extractData(String url, String selector, AICallback callback) {[m
+[31m-        String prompt = "请从网页 " + url + " 中提取数据。" +[m
+[31m-                "\n选择器: " + selector +[m
+[31m-                "\n请提取匹配的数据并以结构化格式返回。";[m
+[31m-        chat(prompt, callback);[m
+[31m-    }[m
+[31m-    [m
+[31m-    @Override[m
+[31m-    public void automateTask(String task, AICallback callback) {[m
+[31m-        String prompt = "请帮我完成以下浏览任务: " + task +[m
+[31m-                "\n请提供详细的步骤说明，包括需要访问的网页和操作步骤。";[m
+[31m-        chat(prompt, callback);[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 设置 API 密钥[m
+[31m-     * @param apiKey 新的 API 密钥[m
+[31m-     */[m
+[31m-    public void setApiKey(String apiKey) {[m
+[31m-        this.apiKey = apiKey;[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 设置 API URL[m
+[31m-     * @param apiUrl API 端点URL[m
+[31m-     */[m
+[31m-    public void setApiUrl(String apiUrl) {[m
+[31m-        if (apiUrl != null && !apiUrl.isEmpty()) {[m
+[31m-            if (!apiUrl.contains("/chat/completions") && !apiUrl.contains("/v1/")) {[m
+[31m-                String baseUrl = apiUrl.endsWith("/") ? apiUrl.substring(0, apiUrl.length() - 1) : apiUrl;[m
+[31m-                this.apiUrl = baseUrl + "/v1/chat/completions";[m
+[31m-            } else {[m
+[31m-                this.apiUrl = apiUrl;[m
+[31m-            }[m
+[31m-        }[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 设置模型[m
+[31m-     * @param model 模型名称[m
+[31m-     */[m
+[31m-    public void setModel(String model) {[m
+[31m-        if (model != null && !model.isEmpty()) {[m
+[31m-            this.model = model;[m
+[31m-        }[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 获取当前 API URL[m
+[31m-     * @return API URL[m
+[31m-     */[m
+[31m-    public String getApiUrl() {[m
+[31m-        return apiUrl;[m
+[31m-    }[m
+[31m-    [m
+[31m-    /**[m
+[31m-     * 获取当前模型名称[m
+[31m-     * @return 模型名称[m
+[31m-     */[m
+[31m-    public String getModel() {[m
+[31m-        return model;[m
+[31m-    }[m
+[31m-    [m
+[31m-    @Override[m
+[31m-    public void chatWithTools(String message, org.json.JSONArray tools, AICallback callback) {[m
+[31m-        if (apiKey == null || apiKey.isEmpty()) {[m
+[31m-            callback.onError("OpenAI API 密钥未配置");[m
+[31m-            return;[m
+[31m-        }[m
+[31m-        [m
+[31m-        try {[m
+[31m-            // 构建请求体[m
+[31m-            JsonObject requestBody = new JsonObject();[m
+[31m-            requestBody.addProperty("model", model);[m
+[31m-            requestBody.addProperty("temperature", 0.7);[m
+[31m-            [m
+[31m-            // 添加消息[m
+[31m-            JsonObject messageObj = new JsonObject();[m
+[31m-            messageObj.addProperty("role", "user");[m
+[31m-            messageObj.addProperty("content", message);[m
+[31m-            [m
+[31m-            JsonObject[] messages = new JsonObject[]{messageObj};[m
+[31m-            requestBody.add("messages", gson.toJsonTree(messages).getAsJsonArray());[m
+[31m-            [m
+[31m-            // 添加工具定义[m
+[31m-            if (tools != null && tools.length() > 0) {[m
+[31m-                com.google.gson.JsonArray toolsArray = gson.fromJson(tools.toString(), com.google.gson.JsonArray.class);[m
+[31m-                requestBody.add("tools", toolsArray);[m
+[31m-                requestBody.addProperty("tool_choice", "auto"); // 让模型自动选择工具[m
+[31m-            }[m
+[31m-            [m
+[31m-            // 创建请求[m
+[31m-            RequestBody body = RequestBody.create([m
+[31m-                    gson.toJson(requestBody), JSON);[m
+[31m-            [m
+[31m-            Request request = new Request.Builder()[m
+[31m-                    .url(apiUrl)[m
+[31m-                    .addHeader("Authorization", "Bearer " + apiKey)[m
+[31m-                    .addHeader("Content-Type", "application/json")[m
+[31m-                    .post(body)[m
+[31m-                    .build();[m
+[31m-            [m
+[31m-            // 发送请求[m
+[31m-            httpClient.newCall(request).enqueue(new Callback() {[m
+[31m-                @Override[m
+[31m-                public void onFailure(Call call, IOException e) {[m
+[31m-                    Log.e(TAG, "OpenAI API 请求失败", e);[m
+[31m-                    callback.onError("网络错误: " + e.getMessage());[m
+[31m-                }[m
+[31m-                [m
+[31m-                @Override[m
+[31m-                public void onResponse(Call call, Response response) throws IOException {[m
+[31m-                    if (!response.isSuccessful()) {[m
+[31m-                        String errorBody = response.body() != null ? response.body().string() : "未知错误";[m
+[31m-                        Log.e(TAG, "OpenAI API 错误: " + response.code() + " - " + errorBody);[m
+[31m-                        callback.onError("API 错误: " + response.code());[m
+[31m-                        return;[m
+[31m-                    }[m
+[31m-                    [m
+[31m-                    String responseBody = response.body().string();[m
+[31m-                    try {[m
+[31m-                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);[m
+[31m-                        JsonObject message = jsonResponse.getAsJsonArray("choices")[m
+[31m-                                .get(0).getAsJsonObject()[m
+[31m-                                .getAsJsonObject("message");[m
+[31m-                        [m
+[31m-                        // 检查是否有工具调用[m
+[31m-                        if (message.has("tool_calls") && !message.get("tool_calls").isJsonNull()) {[m
+[31m-                            com.google.gson.JsonArray toolCalls = message.getAsJsonArray("tool_calls");[m
+[31m-                            // 通知回调有工具调用[m
+[31m-                            for (int i = 0; i < toolCalls.size(); i++) {[m
+[31m-                                JsonObject toolCall = toolCalls.get(i).getAsJsonObject();[m
+[31m-                                JsonObject function = toolCall.getAsJsonObject("function");[m
+[31m-                                String toolName = function.get("name").getAsString();[m
+[31m-                                String arguments = function.get("arguments").getAsString();[m
+[31m-                                callback.onToolCall(toolName, arguments);[m
+[31m-                            }[m
+[31m-                            // 返回工具调用信息（JSON格式）[m
+[31m-                            callback.onSuccess("工具调用: " + toolCalls.toString());[m
+[31m-                        } else {[m
+[31m-                            // 普通文本响应[m
+[31m-                            JsonElement contentElement = message.get("content");[m
+[31m-                            if (contentElement != null && !contentElement.isJsonNull()) {[m
+[31m-                                String content = contentElement.getAsString();[m
+[31
