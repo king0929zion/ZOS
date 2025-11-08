@@ -28,18 +28,20 @@ android {
             // 签名配置优先级：
             // 1. 环境变量（CI/CD）
             // 2. keystore.properties 文件（本地开发）
-            // 3. 默认值（如果未配置，构建会失败但不会报错）
-            def keystoreFile = System.getenv("KEYSTORE_FILE") ?: keystoreProperties['KEYSTORE_FILE'] ?: "release.keystore"
-            def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties['KEYSTORE_PASSWORD'] ?: ""
+            // 3. 如果都未配置，使用 debug 签名（用于测试）
+            def keystoreFile = System.getenv("KEYSTORE_FILE") ?: keystoreProperties['KEYSTORE_FILE']
+            def keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties['KEYSTORE_PASSWORD']
             def keyAliasName = System.getenv("KEY_ALIAS") ?: keystoreProperties['KEY_ALIAS'] ?: "browseros"
-            def keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties['KEY_PASSWORD'] ?: ""
+            def keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties['KEY_PASSWORD']
             
-            if (keystorePassword && keyPassword) {
+            // 如果配置了签名信息，使用自定义签名
+            if (keystoreFile && keystorePassword && keyPassword) {
                 storeFile file(keystoreFile)
                 storePassword keystorePassword
                 keyAlias keyAliasName
                 keyPassword keyPassword
             }
+            // 否则使用 debug 签名（用于测试，不推荐用于生产环境）
         }
     }
 
@@ -48,7 +50,12 @@ android {
             minifyEnabled true
             shrinkResources false  // 暂时禁用资源压缩，避免构建失败
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            // 如果配置了 release 签名则使用，否则使用 debug 签名
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
         }
         debug {
             minifyEnabled false
