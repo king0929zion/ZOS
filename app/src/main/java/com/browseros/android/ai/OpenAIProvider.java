@@ -219,5 +219,103 @@ public class OpenAIProvider implements AIService {
     public String getModel() {
         return model;
     }
+    
+    @Override
+    public void chatWithTools(String message, org.json.JSONArray tools, AICallback callback) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            callback.onError("OpenAI API 密钥未配置");
+            return;
+        }
+        
+        try {
+            // 构建请求体
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("model", model);
+            requestBody.addProperty("temperature", 0.7);
+            
+            // 添加消息
+            JsonObject messageObj = new JsonObject();
+            messageObj.addProperty("role", "user");
+            messageObj.addProperty("content", message);
+            
+            JsonObject[] messages = new JsonObject[]{messageObj};
+            requestBody.add("messages", gson.toJsonTree(messages).getAsJsonArray());
+            
+            // 添加工具定义
+            if (tools != null && tools.length() > 0) {
+                com.google.gson.JsonArray toolsArray = gson.fromJson(tools.toString(), com.google.gson.JsonArray.class);
+                requestBody.add("tools", toolsArray);
+                requestBody.addProperty("tool_choice", "auto"); // 让模型自动选择工具
+            }
+            
+            // 创建请求
+            RequestBody body = RequestBody.create(
+                    gson.toJson(requestBody), JSON);
+            
+            Request request = new Request.Builder()
+                    .url(apiUrl)
+                    .addHeader("Authorization", "Bearer " + apiKey)
+                    .addHeader("Content-Type", "application/json")
+                    .post(body)
+                    .build();
+            
+            // 发送请求
+            httpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e(TAG, "OpenAI API 请求失败", e);
+                    callback.onError("网络错误: " + e.getMessage());
+                }
+                
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        String errorBody = response.body() != null ? response.body().string() : "未知错误";
+                        Log.e(TAG, "OpenAI API 错误: " + response.code() + " - " + errorBody);
+                        callback.onError("API 错误: " + response.code());
+                        return;
+                    }
+                    
+                    String responseBody = response.body().string();
+                    try {
+                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                        JsonObject message = jsonResponse.getAsJsonArray("choices")
+                                .get(0).getAsJsonObject()
+                                .getAsJsonObject("message");
+                        
+                        // 检查是否有工具调用
+                        if (message.has("tool_calls") && !message.get("tool_calls").isJsonNull()) {
+                            com.google.gson.JsonArray toolCalls = message.getAsJsonArray("tool_calls");
+                            // 通知回调有工具调用
+                            for (int i = 0; i < toolCalls.size(); i++) {
+                                JsonObject toolCall = toolCalls.get(i).getAsJsonObject();
+                                JsonObject function = toolCall.getAsJsonObject("function");
+                                String toolName = function.get("name").getAsString();
+                                String arguments = function.get("arguments").getAsString();
+                                callback.onToolCall(toolName, arguments);
+                            }
+                            // 返回工具调用信息（JSON格式）
+                            callback.onSuccess("工具调用: " + toolCalls.toString());
+                        } else {
+                            // 普通文本响应
+                            JsonElement contentElement = message.get("content");
+                            if (contentElement != null && !contentElement.isJsonNull()) {
+                                String content = contentElement.getAsString();
+                                callback.onSuccess(content);
+                            } else {
+                                callback.onSuccess("AI 响应为空");
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "解析响应失败", e);
+                        callback.onError("解析响应失败: " + e.getMessage());
+                    }
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "构建请求失败", e);
+            callback.onError("请求构建失败: " + e.getMessage());
+        }
+    }
 }
 

@@ -28,8 +28,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 
 import com.browseros.android.ai.AIService;
+import com.browseros.android.ai.AgentExecutor;
+import com.browseros.android.ai.AgentToolManager;
 import com.browseros.android.ai.AnthropicProvider;
 import com.browseros.android.ai.OpenAIProvider;
+import com.browseros.android.ai.PageContentExtractor;
 import com.browseros.android.browser.BookmarkManager;
 import com.browseros.android.browser.BrowserEngine;
 import com.browseros.android.browser.HistoryManager;
@@ -72,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
     private BookmarkManager bookmarkManager;
     private SecureStorage secureStorage;
     private AIService aiService;
+    private AgentToolManager agentToolManager;
+    private AgentExecutor agentExecutor;
+    private PageContentExtractor contentExtractor;
 
     private WebView webView;
     private boolean isMenuOpen = false;
@@ -603,6 +609,14 @@ public class MainActivity extends AppCompatActivity {
             String openaiModel = getSharedPreferences("settings", MODE_PRIVATE)
                     .getString("openai_model", "gpt-3.5-turbo");
             aiService = new OpenAIProvider(openaiKey, openaiUrl, openaiModel);
+            
+            // 初始化 Agent 系统
+            if (browserEngine != null && webView != null) {
+                agentToolManager = new AgentToolManager(this, browserEngine);
+                agentExecutor = new AgentExecutor(aiService, agentToolManager);
+                contentExtractor = new PageContentExtractor(webView);
+            }
+            
             addChatMessage(ChatSender.BOT, getString(R.string.ai_connected_openai));
             return;
         }
@@ -637,17 +651,34 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         TextView thinkingView = addChatMessage(ChatSender.BOT, getString(R.string.ai_thinking));
-        aiService.chat(message, new AIService.AICallback() {
-            @Override
-            public void onSuccess(String response) {
-                runOnUiThread(() -> thinkingView.setText(response));
-            }
+        
+        // 如果 Agent 系统已初始化，使用 Agent 执行器
+        if (agentExecutor != null && agentToolManager != null) {
+            agentExecutor.execute(message, new AgentExecutor.AgentCallback() {
+                @Override
+                public void onSuccess(String result) {
+                    runOnUiThread(() -> thinkingView.setText(result));
+                }
+                
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> thinkingView.setText(getString(R.string.ai_error_message, error)));
+                }
+            });
+        } else {
+            // 回退到普通聊天模式
+            aiService.chat(message, new AIService.AICallback() {
+                @Override
+                public void onSuccess(String response) {
+                    runOnUiThread(() -> thinkingView.setText(response));
+                }
 
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> thinkingView.setText(getString(R.string.ai_error_message, error)));
-            }
-        });
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> thinkingView.setText(getString(R.string.ai_error_message, error)));
+                }
+            });
+        }
     }
 
     private boolean handleLocalInstruction(String message) {

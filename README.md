@@ -7,10 +7,12 @@ BrowserOS Android 是 BrowserOS 浏览器的安卓版本，是一个基于 Chrom
 ## 核心特性
 
 - 🏠 **熟悉的界面** - 类似 Chrome 的用户体验
-- 🤖 **AI 代理功能** - 支持 OpenAI、Anthropic API，支持所有 OpenAI 规范的模型和自定义端点
+- 🤖 **AI Agent 能力** - 原生 AI Agent 系统，支持工具调用（Function Calling），可以自动化执行浏览器操作
 - 🔒 **隐私优先** - 使用您自己的 API 密钥，数据存储在本地设备
 - 🚀 **开源免费** - 完全开源，社区驱动
 - 📱 **移动优化** - 专为安卓设备优化的界面和交互
+- 🛠️ **强大的工具系统** - AI 可以调用浏览器工具（导航、点击、输入、滚动、提取内容等）
+- 🧠 **智能自动化** - AI Agent 可以理解复杂任务并自动执行多步操作
 
 ## 技术架构
 
@@ -31,10 +33,14 @@ app/
 │   │   │   ├── BrowserEngine.java     # 浏览器引擎封装
 │   │   │   ├── TabManager.java        # 标签页管理
 │   │   │   └── HistoryManager.java    # 历史记录管理
-│   │   ├── ai/                        # AI 代理功能
+│   │   ├── ai/                        # AI Agent 功能
 │   │   │   ├── AIService.java         # AI 服务接口
-│   │   │   ├── OpenAIProvider.java    # OpenAI 实现（支持所有OpenAI规范的模型）
-│   │   │   └── AnthropicProvider.java # Anthropic 实现
+│   │   │   ├── OpenAIProvider.java    # OpenAI 实现（支持工具调用）
+│   │   │   ├── AnthropicProvider.java # Anthropic 实现
+│   │   │   ├── AgentTool.java         # Agent 工具接口
+│   │   │   ├── AgentToolManager.java  # 工具管理器
+│   │   │   ├── AgentExecutor.java     # Agent 执行引擎
+│   │   │   └── PageContentExtractor.java # 页面内容提取器
 │   │   ├── privacy/                   # 隐私保护功能
 │   │   │   ├── DataManager.java       # 数据管理
 │   │   │   └── SecureStorage.java     # 安全存储
@@ -75,18 +81,45 @@ app/
   - `clearHistory()`: 清空历史记录
   - `searchHistory(String keyword)`: 搜索历史记录
 
-### 2. AI 代理功能
+### 2. AI Agent 系统
+
+#### AgentExecutor
+- **功能**: AI Agent 执行引擎，协调 AI 模型和工具的执行
+- **特性**:
+  - 支持多轮工具调用循环
+  - 自动规划任务步骤
+  - 根据工具结果决定下一步操作
+  - 最大迭代次数限制（防止无限循环）
+
+#### AgentToolManager
+- **功能**: 管理所有可用的浏览器操作工具
+- **可用工具**:
+  - **导航工具**: `navigate`, `go_back`, `go_forward`, `reload`, `new_tab`
+  - **页面操作**: `click`, `type`, `scroll`, `wait`
+  - **内容提取**: `extract_content`, `get_page_info`, `execute_script`
+- **工具注册**: 支持动态注册新工具
+
+#### PageContentExtractor
+- **功能**: 从 WebView 中提取页面内容
+- **提取能力**:
+  - 提取页面文本内容
+  - 提取页面 HTML
+  - 提取所有链接
+  - 提取所有图片
+  - 提取表单元素
+  - 提取页面结构化信息
 
 #### AIService
-- **功能**: AI 服务统一接口
+- **功能**: AI 服务统一接口，支持工具调用
 - **主要方法**:
   - `chat(String message)`: 发送聊天消息
+  - `chatWithTools(String message, JSONArray tools)`: 发送消息（支持工具调用）
   - `analyzePage(String url)`: 分析网页内容
   - `extractData(String url, String selector)`: 提取网页数据
   - `automateTask(String task)`: 自动化任务
 
 #### OpenAIProvider
-- **功能**: OpenAI API 实现，支持所有 OpenAI 规范的模型
+- **功能**: OpenAI API 实现，支持所有 OpenAI 规范的模型和工具调用（Function Calling）
 - **配置**: 
   - 需要设置 OPENAI_API_KEY（必需）
   - 可选设置 OPENAI_API_URL（默认：https://api.openai.com/v1/chat/completions）
@@ -95,6 +128,10 @@ app/
   - OpenAI 官方模型：GPT-4, GPT-4 Turbo, GPT-3.5-turbo 等
   - 兼容 OpenAI API 的第三方模型：Claude（通过兼容端点）、Llama、Mistral 等
   - 支持自定义 API 端点，可连接任何兼容 OpenAI API 格式的服务
+- **工具调用**: 
+  - 支持 OpenAI Function Calling 规范
+  - AI 可以自动选择并调用浏览器工具
+  - 支持多轮工具调用循环
 - **自定义配置**: 
   - 支持自定义 API URL，可连接代理服务或自建服务
   - 支持自定义模型名称，兼容所有 OpenAI API 规范的模型
@@ -157,10 +194,14 @@ adb install app/build/outputs/apk/debug/app-debug.apk
    - 支持多标签页浏览
    - 长按链接可以打开新标签页
 
-3. **使用 AI 功能**
+3. **使用 AI Agent 功能**
    - 点击工具栏的 AI 图标
-   - 输入任务描述，AI 会帮助完成
-   - 例如："帮我搜索今天北京的天气"
+   - 输入任务描述，AI Agent 会自动执行
+   - **示例任务**:
+     - "打开百度并搜索天气" - AI 会自动导航、点击、输入
+     - "提取这个页面的所有链接" - AI 会自动提取并返回链接列表
+     - "帮我填写登录表单，用户名是test" - AI 会自动查找表单并填写
+     - "滚动到页面底部" - AI 会自动滚动页面
 
 4. **隐私设置**
    - 在设置中可以清除浏览数据
@@ -202,6 +243,11 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - [x] AI 服务集成框架
 - [x] OpenAI API 支持（支持所有 OpenAI 规范的模型）
 - [x] OpenAI 自定义 URL 和模型配置
+- [x] OpenAI Function Calling（工具调用）支持
+- [x] AI Agent 执行引擎（AgentExecutor）
+- [x] 浏览器工具系统（AgentToolManager）
+- [x] 页面内容提取器（PageContentExtractor）
+- [x] 12+ 个浏览器操作工具（导航、点击、输入、滚动、提取等）
 - [x] Anthropic Claude API 支持
 - [x] AI 对话界面
 - [x] 隐私保护基础功能
@@ -210,11 +256,12 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - [x] 设置界面（API 密钥配置、隐私设置）
 
 ### 开发中功能 🚧
-- [ ] AI 代理自动化任务（需要 JavaScript 注入和页面交互）
+- [ ] 流式响应支持（Streaming）
 - [ ] 标签页管理界面（显示所有标签页、切换、关闭）
-- [ ] 书签管理
-- [ ] 下载管理
+- [ ] 书签管理界面优化
+- [ ] 下载管理界面
 - [ ] 历史记录搜索界面
+- [ ] Agent 执行可视化（显示工具调用过程）
 
 ### 计划功能 📋
 - [ ] AI 广告拦截器
@@ -222,7 +269,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - [ ] 同步功能（可选）
 - [ ] MCP 服务器支持
 - [ ] 扩展支持
-- [ ] 无痕浏览模式
+- [ ] 更多 Agent 工具（截图、下载、表单验证等）
 
 ## 贡献指南
 
@@ -250,20 +297,107 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - ✅ 基础浏览器功能（导航、标签页、历史记录）
 - ✅ AI 服务集成（OpenAI、Anthropic）
 - ✅ OpenAI 自定义 URL 和模型支持
+- ✅ AI Agent 系统（工具调用、自动化执行）
+- ✅ 浏览器工具系统（12+ 个操作工具）
+- ✅ 页面内容提取和分析
 - ✅ AI 对话界面
 - ✅ 隐私保护功能（安全存储、数据管理）
 - ✅ 设置界面（API 密钥配置）
 
 ### 已知问题
 - 标签页管理界面尚未实现（可通过代码创建多个标签页，但 UI 未完成）
-- AI 自动化任务功能需要进一步开发（需要 JavaScript 注入）
-- 部分错误处理可能需要优化
+- Agent 工具调用需要页面完全加载后才能执行
+- 部分复杂页面的内容提取可能需要优化
+- 流式响应暂未实现（计划中）
 
 ### 下一步计划
-1. 完善标签页管理 UI
-2. 实现 AI 自动化任务功能
-3. 添加书签管理
-4. 优化用户体验和性能
+1. 实现流式响应支持
+2. 完善标签页管理 UI
+3. 添加更多 Agent 工具
+4. 优化 Agent 执行性能和错误处理
+5. 添加 Agent 执行过程可视化
+
+## AI Agent 使用指南
+
+### Agent 能力说明
+
+BrowserOS Android 实现了完整的 AI Agent 系统，参考了 [BrowserOS](https://github.com/browseros-ai/BrowserOS) 的设计理念，AI 可以：
+
+1. **理解自然语言指令**
+   - "打开百度并搜索天气"
+   - "帮我填写这个表单"
+   - "提取这个页面的所有链接"
+
+2. **自动执行多步操作**
+   - AI 会自动规划步骤
+   - 调用相应的浏览器工具
+   - 根据结果决定下一步操作
+   - 完成任务后给出总结
+
+3. **智能页面操作**
+   - 点击按钮和链接
+   - 填写表单
+   - 滚动页面查找内容
+   - 提取页面数据
+
+### 使用示例
+
+**示例 1：导航和搜索**
+```
+用户: "打开百度并搜索'Android开发'"
+AI Agent: 
+  [调用 navigate 工具导航到百度] 
+  → [调用 click 工具点击搜索框] 
+  → [调用 type 工具输入'Android开发'] 
+  → [调用 click 工具点击搜索按钮]
+  → "已完成搜索"
+```
+
+**示例 2：数据提取**
+```
+用户: "提取这个页面的所有链接"
+AI Agent: 
+  [调用 extract_content 工具提取链接] 
+  → "找到以下链接：[链接列表]"
+```
+
+**示例 3：表单填写**
+```
+用户: "帮我填写登录表单，用户名是test，密码是123456"
+AI Agent: 
+  [调用 extract_content 工具查找表单] 
+  → [调用 type 工具填写用户名] 
+  → [调用 type 工具填写密码] 
+  → [调用 click 工具提交]
+  → "已填写并提交表单"
+```
+
+### 工具调用流程
+
+1. 用户发送消息
+2. AI 分析意图，决定需要调用的工具
+3. AgentExecutor 执行工具调用
+4. 工具执行结果返回给 AI
+5. AI 根据结果决定下一步操作
+6. 重复步骤 3-5 直到任务完成
+7. AI 返回最终结果
+
+### 可用工具列表
+
+| 工具名称 | 功能 | 参数示例 |
+|---------|------|---------|
+| `navigate` | 导航到URL | `{"url": "https://example.com"}` |
+| `click` | 点击元素 | `{"selector": "#button"}` |
+| `type` | 输入文本 | `{"selector": "#input", "text": "hello"}` |
+| `scroll` | 滚动页面 | `{"direction": "down", "amount": 300}` |
+| `wait` | 等待时间 | `{"ms": 1000}` |
+| `extract_content` | 提取内容 | `{"selector": ".content", "type": "text"}` |
+| `get_page_info` | 获取页面信息 | `{}` |
+| `execute_script` | 执行JS | `{"script": "alert('hello')"}` |
+| `go_back` | 后退 | `{}` |
+| `go_forward` | 前进 | `{}` |
+| `reload` | 刷新 | `{}` |
+| `new_tab` | 新标签 | `{"url": "https://example.com"}` |
 
 ## OpenAI 自定义配置详解
 

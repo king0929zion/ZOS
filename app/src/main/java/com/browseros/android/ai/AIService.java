@@ -15,6 +15,17 @@ public interface AIService {
     void chat(String message, AICallback callback);
     
     /**
+     * 发送聊天消息（支持工具调用）
+     * @param message 用户消息
+     * @param tools 可用工具定义（JSON格式）
+     * @param callback 回调接口
+     */
+    default void chatWithTools(String message, org.json.JSONArray tools, AICallback callback) {
+        // 默认实现：回退到普通聊天
+        chat(message, callback);
+    }
+    
+    /**
      * 分析网页内容
      * @param url 网页 URL
      * @param callback 回调接口
