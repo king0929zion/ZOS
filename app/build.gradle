@@ -16,11 +16,24 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            // 签名配置从环境变量或 gradle.properties 读取
+            // 本地开发：在 gradle.properties 中配置
+            // CI/CD：通过环境变量传递
+            storeFile file(System.getenv("KEYSTORE_FILE") ?: project.findProperty("KEYSTORE_FILE") ?: "release.keystore")
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") ?: "browseros"
+            keyPassword System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") ?: ""
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources false  // 暂时禁用资源压缩，避免构建失败
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         debug {
             minifyEnabled false

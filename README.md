@@ -172,15 +172,26 @@ git clone <repository-url>
 cd BrowserOS-Android
 ```
 
-2. **配置 API 密钥（可选）**
+2. **配置应用签名（必需）**
+   - 参考 [SIGNING_SETUP.md](SIGNING_SETUP.md) 配置签名密钥
+   - 生成 keystore 文件并配置签名信息
+   - 本地开发：创建 `keystore.properties` 文件（不提交到 Git）
+   - CI/CD：在 GitHub Secrets 中配置签名信息
+
+3. **配置 API 密钥（可选）**
    - 在应用设置中手动配置 API 密钥
    - OpenAI 支持自定义 API URL 和模型名称
    - Anthropic 使用官方 API 端点
 
-3. **编译安装**
+4. **编译安装**
 ```bash
+# Debug 版本（无需签名）
 ./gradlew assembleDebug
 adb install app/build/outputs/apk/debug/app-debug.apk
+
+# Release 版本（需要签名）
+./gradlew assembleRelease
+adb install app/build/outputs/apk/release/app-release.apk
 ```
 
 ### 使用说明
