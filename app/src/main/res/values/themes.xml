@@ -7,5 +7,12 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+    
+    <!-- Material Components Chip Assist 样式 -->
+    <style name="Widget.MaterialComponents.Chip.Assist" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/chipBackground</item>
+        <item name="chipStrokeColor">@color/chipStroke</item>
+        <item name="android:textColor">@color/chipText</item>
+    </style>
 </resources>
 
