@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.browseros.android.R;
 import com.browseros.android.ai.AIService;
 import com.browseros.android.ai.AnthropicProvider;
-import com.browseros.android.ai.OllamaProvider;
 import com.browseros.android.ai.OpenAIProvider;
 import com.browseros.android.privacy.DataManager;
 import com.browseros.android.privacy.SecureStorage;
@@ -68,14 +67,19 @@ public class AIChatActivity extends AppCompatActivity {
     
     /**
      * 初始化 AI 服务
-     * 按优先级尝试：OpenAI -> Anthropic -> Ollama
+     * 按优先级尝试：OpenAI -> Anthropic
      */
     private void initializeAIService() {
         // 尝试 OpenAI
         String openaiKey = secureStorage.getApiKey("openai_api_key");
         if (openaiKey != null && !openaiKey.isEmpty()) {
-            aiService = new OpenAIProvider(openaiKey);
-            appendMessage("系统", "已连接到 OpenAI");
+            // 获取自定义URL和模型
+            String openaiUrl = getSharedPreferences("settings", MODE_PRIVATE)
+                    .getString("openai_url", "https://api.openai.com/v1/chat/completions");
+            String openaiModel = getSharedPreferences("settings", MODE_PRIVATE)
+                    .getString("openai_model", "gpt-3.5-turbo");
+            aiService = new OpenAIProvider(openaiKey, openaiUrl, openaiModel);
+            appendMessage("系统", "已连接到 OpenAI（" + openaiModel + "）");
             return;
         }
         
@@ -87,12 +91,9 @@ public class AIChatActivity extends AppCompatActivity {
             return;
         }
         
-        // 尝试 Ollama（本地模型）
-        String ollamaUrl = getSharedPreferences("settings", MODE_PRIVATE)
-                .getString("ollama_url", "http://localhost:11434");
-        aiService = new OllamaProvider(ollamaUrl, "llama2");
-        appendMessage("系统", "尝试连接到 Ollama 本地模型: " + ollamaUrl);
-        appendMessage("系统", "提示：如果连接失败，请确保 Ollama 正在运行，或在设置中配置云端 API 密钥");
+        // 没有配置任何服务
+        appendMessage("系统", "未检测到已配置的 AI 服务");
+        appendMessage("系统", "请在设置中配置 OpenAI 或 Anthropic API 密钥");
     }
     
     /**

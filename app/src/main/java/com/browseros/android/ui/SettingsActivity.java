@@ -24,8 +24,9 @@ public class SettingsActivity extends AppCompatActivity {
     private SecureStorage secureStorage;
     
     private EditText openaiKeyInput;
+    private EditText openaiUrlInput;
+    private EditText openaiModelInput;
     private EditText anthropicKeyInput;
-    private EditText ollamaUrlInput;
     private TextView dataSizeText;
     private Button clearHistoryButton;
     private Button clearAllDataButton;
@@ -54,8 +55,9 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void initializeViews() {
         openaiKeyInput = findViewById(R.id.openai_key_input);
+        openaiUrlInput = findViewById(R.id.openai_url_input);
+        openaiModelInput = findViewById(R.id.openai_model_input);
         anthropicKeyInput = findViewById(R.id.anthropic_key_input);
-        ollamaUrlInput = findViewById(R.id.ollama_url_input);
         dataSizeText = findViewById(R.id.data_size_text);
         clearHistoryButton = findViewById(R.id.clear_history_button);
         clearAllDataButton = findViewById(R.id.clear_all_data_button);
@@ -73,10 +75,15 @@ public class SettingsActivity extends AppCompatActivity {
             anthropicKeyInput.setHint("已配置（点击修改）");
         }
         
-        // 加载 Ollama URL（从 SharedPreferences）
-        String ollamaUrl = getSharedPreferences("settings", MODE_PRIVATE)
-                .getString("ollama_url", "http://localhost:11434");
-        ollamaUrlInput.setText(ollamaUrl);
+        // 加载 OpenAI URL（从 SharedPreferences）
+        String openaiUrl = getSharedPreferences("settings", MODE_PRIVATE)
+                .getString("openai_url", "https://api.openai.com/v1/chat/completions");
+        openaiUrlInput.setText(openaiUrl);
+        
+        // 加载 OpenAI 模型（从 SharedPreferences）
+        String openaiModel = getSharedPreferences("settings", MODE_PRIVATE)
+                .getString("openai_model", "gpt-3.5-turbo");
+        openaiModelInput.setText(openaiModel);
         
         // 更新数据大小
         updateDataSize();
@@ -115,19 +122,28 @@ public class SettingsActivity extends AppCompatActivity {
             secureStorage.saveApiKey("openai_api_key", openaiKey);
         }
         
+        // 保存 OpenAI URL
+        String openaiUrl = openaiUrlInput.getText().toString().trim();
+        if (!openaiUrl.isEmpty()) {
+            getSharedPreferences("settings", MODE_PRIVATE)
+                    .edit()
+                    .putString("openai_url", openaiUrl)
+                    .apply();
+        }
+        
+        // 保存 OpenAI 模型
+        String openaiModel = openaiModelInput.getText().toString().trim();
+        if (!openaiModel.isEmpty()) {
+            getSharedPreferences("settings", MODE_PRIVATE)
+                    .edit()
+                    .putString("openai_model", openaiModel)
+                    .apply();
+        }
+        
         // 保存 Anthropic API 密钥
         String anthropicKey = anthropicKeyInput.getText().toString().trim();
         if (!anthropicKey.isEmpty()) {
             secureStorage.saveApiKey("anthropic_api_key", anthropicKey);
-        }
-        
-        // 保存 Ollama URL
-        String ollamaUrl = ollamaUrlInput.getText().toString().trim();
-        if (!ollamaUrl.isEmpty()) {
-            getSharedPreferences("settings", MODE_PRIVATE)
-                    .edit()
-                    .putString("ollama_url", ollamaUrl)
-                    .apply();
         }
         
         Toast.makeText(this, "设置已保存", Toast.LENGTH_SHORT).show();

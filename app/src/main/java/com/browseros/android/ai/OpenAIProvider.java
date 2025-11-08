@@ -18,36 +18,61 @@ import okhttp3.Response;
 
 /**
  * OpenAI API 提供者
- * 实现 OpenAI GPT 模型的 AI 服务
+ * 实现 OpenAI 规范的 AI 服务，支持所有兼容 OpenAI API 的模型
+ * 支持自定义 API URL 和模型名称
  * 
  * @author BrowserOS Team
  */
 public class OpenAIProvider implements AIService {
     private static final String TAG = "OpenAIProvider";
-    private static final String API_BASE_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String DEFAULT_API_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String DEFAULT_MODEL = "gpt-3.5-turbo";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     
     private String apiKey;
+    private String apiUrl;
     private String model;
     private OkHttpClient httpClient;
     private Gson gson;
     
     /**
-     * 构造函数
-     * @param apiKey OpenAI API 密钥
+     * 构造函数（使用默认URL和模型）
+     * @param apiKey API 密钥
      */
     public OpenAIProvider(String apiKey) {
-        this(apiKey, "gpt-3.5-turbo");
+        this(apiKey, DEFAULT_API_URL, DEFAULT_MODEL);
     }
     
     /**
-     * 构造函数
-     * @param apiKey OpenAI API 密钥
-     * @param model 使用的模型名称（如 gpt-4, gpt-3.5-turbo）
+     * 构造函数（使用默认URL）
+     * @param apiKey API 密钥
+     * @param model 使用的模型名称（如 gpt-4, gpt-3.5-turbo, claude-3-sonnet 等）
      */
     public OpenAIProvider(String apiKey, String model) {
+        this(apiKey, DEFAULT_API_URL, model);
+    }
+    
+    /**
+     * 完整构造函数（支持自定义URL和模型）
+     * @param apiKey API 密钥
+     * @param apiUrl API 端点URL（如 https://api.openai.com/v1/chat/completions 或自定义URL）
+     * @param model 使用的模型名称（支持所有OpenAI规范的模型）
+     */
+    public OpenAIProvider(String apiKey, String apiUrl, String model) {
         this.apiKey = apiKey;
-        this.model = model;
+        // 如果URL不包含完整路径，自动添加 /v1/chat/completions
+        if (apiUrl != null && !apiUrl.isEmpty()) {
+            if (!apiUrl.contains("/chat/completions") && !apiUrl.contains("/v1/")) {
+                // 移除末尾的斜杠
+                String baseUrl = apiUrl.endsWith("/") ? apiUrl.substring(0, apiUrl.length() - 1) : apiUrl;
+                this.apiUrl = baseUrl + "/v1/chat/completions";
+            } else {
+                this.apiUrl = apiUrl;
+            }
+        } else {
+            this.apiUrl = DEFAULT_API_URL;
+        }
+        this.model = (model != null && !model.isEmpty()) ? model : DEFAULT_MODEL;
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
@@ -80,7 +105,7 @@ public class OpenAIProvider implements AIService {
                     gson.toJson(requestBody), JSON);
             
             Request request = new Request.Builder()
-                    .url(API_BASE_URL)
+                    .url(apiUrl)
                     .addHeader("Authorization", "Bearer " + apiKey)
                     .addHeader("Content-Type", "application/json")
                     .post(body)
@@ -155,11 +180,44 @@ public class OpenAIProvider implements AIService {
     }
     
     /**
+     * 设置 API URL
+     * @param apiUrl API 端点URL
+     */
+    public void setApiUrl(String apiUrl) {
+        if (apiUrl != null && !apiUrl.isEmpty()) {
+            if (!apiUrl.contains("/chat/completions") && !apiUrl.contains("/v1/")) {
+                String baseUrl = apiUrl.endsWith("/") ? apiUrl.substring(0, apiUrl.length() - 1) : apiUrl;
+                this.apiUrl = baseUrl + "/v1/chat/completions";
+            } else {
+                this.apiUrl = apiUrl;
+            }
+        }
+    }
+    
+    /**
      * 设置模型
      * @param model 模型名称
      */
     public void setModel(String model) {
-        this.model = model;
+        if (model != null && !model.isEmpty()) {
+            this.model = model;
+        }
+    }
+    
+    /**
+     * 获取当前 API URL
+     * @return API URL
+     */
+    public String getApiUrl() {
+        return apiUrl;
+    }
+    
+    /**
+     * 获取当前模型名称
+     * @return 模型名称
+     */
+    public String getModel() {
+        return model;
     }
 }
 

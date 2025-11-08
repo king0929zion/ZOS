@@ -31,6 +31,36 @@
             android:layout_height="wrap_content"
             android:hint="输入 OpenAI API 密钥"
             android:inputType="textPassword"
+            android:layout_marginBottom="8dp" />
+
+        <!-- OpenAI API URL -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/openai_api_url"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/openai_url_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="https://api.openai.com/v1/chat/completions"
+            android:inputType="textUri"
+            android:layout_marginBottom="8dp" />
+
+        <!-- OpenAI 模型 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/openai_model"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/openai_model_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="gpt-3.5-turbo"
+            android:inputType="text"
             android:layout_marginBottom="16dp" />
 
         <!-- Anthropic API 密钥 -->
@@ -46,21 +76,6 @@
             android:layout_height="wrap_content"
             android:hint="输入 Anthropic API 密钥"
             android:inputType="textPassword"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Ollama URL -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/ollama_url"
-            android:layout_marginBottom="8dp" />
-
-        <EditText
-            android:id="@+id/ollama_url_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="http://localhost:11434"
-            android:inputType="textUri"
             android:layout_marginBottom="24dp" />
 
         <!-- 隐私设置 -->

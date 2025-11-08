@@ -29,7 +29,6 @@ import androidx.core.widget.NestedScrollView;
 
 import com.browseros.android.ai.AIService;
 import com.browseros.android.ai.AnthropicProvider;
-import com.browseros.android.ai.OllamaProvider;
 import com.browseros.android.ai.OpenAIProvider;
 import com.browseros.android.browser.BookmarkManager;
 import com.browseros.android.browser.BrowserEngine;
@@ -581,7 +580,12 @@ public class MainActivity extends AppCompatActivity {
         if (aiService != null) return;
         String openaiKey = secureStorage.getApiKey("openai_api_key");
         if (!TextUtils.isEmpty(openaiKey)) {
-            aiService = new OpenAIProvider(openaiKey);
+            // 获取自定义URL和模型
+            String openaiUrl = getSharedPreferences("settings", MODE_PRIVATE)
+                    .getString("openai_url", "https://api.openai.com/v1/chat/completions");
+            String openaiModel = getSharedPreferences("settings", MODE_PRIVATE)
+                    .getString("openai_model", "gpt-3.5-turbo");
+            aiService = new OpenAIProvider(openaiKey, openaiUrl, openaiModel);
             addChatMessage(ChatSender.BOT, getString(R.string.ai_connected_openai));
             return;
         }
@@ -591,10 +595,8 @@ public class MainActivity extends AppCompatActivity {
             addChatMessage(ChatSender.BOT, getString(R.string.ai_connected_anthropic));
             return;
         }
-        String ollamaUrl = getSharedPreferences("settings", MODE_PRIVATE)
-                .getString("ollama_url", "http://localhost:11434");
-        aiService = new OllamaProvider(ollamaUrl, "llama2");
-        addChatMessage(ChatSender.BOT, getString(R.string.ai_connected_ollama, ollamaUrl));
+        // 如果没有配置任何API密钥，提示用户
+        addChatMessage(ChatSender.BOT, getString(R.string.ai_no_service_configured));
     }
 
     private void ensureAiWelcomeMessage() {

@@ -7,7 +7,7 @@ BrowserOS Android 是 BrowserOS 浏览器的安卓版本，是一个基于 Chrom
 ## 核心特性
 
 - 🏠 **熟悉的界面** - 类似 Chrome 的用户体验
-- 🤖 **AI 代理功能** - 支持 OpenAI、Anthropic API，以及本地模型（Ollama/LMStudio）
+- 🤖 **AI 代理功能** - 支持 OpenAI、Anthropic API，支持所有 OpenAI 规范的模型和自定义端点
 - 🔒 **隐私优先** - 使用您自己的 API 密钥，数据存储在本地设备
 - 🚀 **开源免费** - 完全开源，社区驱动
 - 📱 **移动优化** - 专为安卓设备优化的界面和交互
@@ -33,9 +33,8 @@ app/
 │   │   │   └── HistoryManager.java    # 历史记录管理
 │   │   ├── ai/                        # AI 代理功能
 │   │   │   ├── AIService.java         # AI 服务接口
-│   │   │   ├── OpenAIProvider.java    # OpenAI 实现
-│   │   │   ├── AnthropicProvider.java # Anthropic 实现
-│   │   │   └── OllamaProvider.java    # Ollama 本地模型实现
+│   │   │   ├── OpenAIProvider.java    # OpenAI 实现（支持所有OpenAI规范的模型）
+│   │   │   └── AnthropicProvider.java # Anthropic 实现
 │   │   ├── privacy/                   # 隐私保护功能
 │   │   │   ├── DataManager.java       # 数据管理
 │   │   │   └── SecureStorage.java     # 安全存储
@@ -87,19 +86,23 @@ app/
   - `automateTask(String task)`: 自动化任务
 
 #### OpenAIProvider
-- **功能**: OpenAI API 实现
-- **配置**: 需要设置 OPENAI_API_KEY
-- **支持模型**: GPT-4, GPT-3.5-turbo
+- **功能**: OpenAI API 实现，支持所有 OpenAI 规范的模型
+- **配置**: 
+  - 需要设置 OPENAI_API_KEY（必需）
+  - 可选设置 OPENAI_API_URL（默认：https://api.openai.com/v1/chat/completions）
+  - 可选设置 OPENAI_MODEL（默认：gpt-3.5-turbo）
+- **支持模型**: 
+  - OpenAI 官方模型：GPT-4, GPT-4 Turbo, GPT-3.5-turbo 等
+  - 兼容 OpenAI API 的第三方模型：Claude（通过兼容端点）、Llama、Mistral 等
+  - 支持自定义 API 端点，可连接任何兼容 OpenAI API 格式的服务
+- **自定义配置**: 
+  - 支持自定义 API URL，可连接代理服务或自建服务
+  - 支持自定义模型名称，兼容所有 OpenAI API 规范的模型
 
 #### AnthropicProvider
 - **功能**: Anthropic Claude API 实现
 - **配置**: 需要设置 ANTHROPIC_API_KEY
-- **支持模型**: Claude 3 Opus, Claude 3 Sonnet
-
-#### OllamaProvider
-- **功能**: Ollama 本地模型实现
-- **配置**: 需要设置 OLLAMA_BASE_URL（默认 http://localhost:11434）
-- **支持**: 所有本地运行的 Ollama 模型
+- **支持模型**: Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku
 
 ### 3. 隐私保护功能
 
@@ -133,8 +136,9 @@ cd BrowserOS-Android
 ```
 
 2. **配置 API 密钥（可选）**
-   - 在 `app/src/main/res/values/config.xml` 中配置默认 API 密钥
-   - 或在应用设置中手动配置
+   - 在应用设置中手动配置 API 密钥
+   - OpenAI 支持自定义 API URL 和模型名称
+   - Anthropic 使用官方 API 端点
 
 3. **编译安装**
 ```bash
@@ -168,19 +172,17 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ### API 密钥配置
 
 #### OpenAI
-```xml
-<string name="openai_api_key">your-api-key-here</string>
-```
+- **API 密钥**: 在设置界面输入 OpenAI API 密钥
+- **API URL**（可选）: 默认使用 `https://api.openai.com/v1/chat/completions`
+  - 可自定义为其他兼容 OpenAI API 的端点
+  - 例如：`https://api.example.com/v1/chat/completions`
+- **模型名称**（可选）: 默认使用 `gpt-3.5-turbo`
+  - 支持所有 OpenAI 官方模型：`gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo` 等
+  - 支持兼容 OpenAI API 的第三方模型
 
 #### Anthropic
-```xml
-<string name="anthropic_api_key">your-api-key-here</string>
-```
-
-#### Ollama（本地模型）
-```xml
-<string name="ollama_base_url">http://localhost:11434</string>
-```
+- **API 密钥**: 在设置界面输入 Anthropic API 密钥
+- 使用官方 API 端点，无需额外配置
 
 ### 权限说明
 
@@ -198,9 +200,9 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 - [x] 多标签页管理
 - [x] 浏览历史记录（SQLite 数据库存储）
 - [x] AI 服务集成框架
-- [x] OpenAI API 支持
+- [x] OpenAI API 支持（支持所有 OpenAI 规范的模型）
+- [x] OpenAI 自定义 URL 和模型配置
 - [x] Anthropic Claude API 支持
-- [x] Ollama 本地模型支持
 - [x] AI 对话界面
 - [x] 隐私保护基础功能
 - [x] 安全存储（Android Keystore 加密 API 密钥）
@@ -246,7 +248,8 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ### v0.1.0 (当前版本)
 - ✅ 初始版本发布
 - ✅ 基础浏览器功能（导航、标签页、历史记录）
-- ✅ AI 服务集成（OpenAI、Anthropic、Ollama）
+- ✅ AI 服务集成（OpenAI、Anthropic）
+- ✅ OpenAI 自定义 URL 和模型支持
 - ✅ AI 对话界面
 - ✅ 隐私保护功能（安全存储、数据管理）
 - ✅ 设置界面（API 密钥配置）
@@ -261,6 +264,58 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 2. 实现 AI 自动化任务功能
 3. 添加书签管理
 4. 优化用户体验和性能
+
+## OpenAI 自定义配置详解
+
+### 支持的模型类型
+
+OpenAIProvider 支持所有符合 OpenAI API 规范的模型，包括但不限于：
+
+1. **OpenAI 官方模型**
+   - `gpt-4` - GPT-4 模型
+   - `gpt-4-turbo` - GPT-4 Turbo 模型
+   - `gpt-3.5-turbo` - GPT-3.5 Turbo 模型（默认）
+   - `gpt-4o` - GPT-4 Optimized 模型
+
+2. **兼容 OpenAI API 的第三方服务**
+   - 通过设置自定义 API URL，可以使用任何兼容 OpenAI API 格式的服务
+   - 例如：OpenRouter、Together AI、Anyscale 等
+   - 支持的模型包括：Claude（通过兼容端点）、Llama、Mistral、Gemini 等
+
+### 自定义 API URL 示例
+
+1. **使用 OpenRouter**
+   ```
+   API URL: https://openrouter.ai/api/v1/chat/completions
+   模型: anthropic/claude-3-opus
+   ```
+
+2. **使用 Together AI**
+   ```
+   API URL: https://api.together.xyz/v1/chat/completions
+   模型: meta-llama/Llama-2-70b-chat-hf
+   ```
+
+3. **使用自建服务**
+   ```
+   API URL: https://your-server.com/v1/chat/completions
+   模型: your-custom-model
+   ```
+
+### 配置步骤
+
+1. 打开应用设置
+2. 输入 OpenAI API 密钥（如果使用第三方服务，输入对应服务的 API 密钥）
+3. （可选）输入自定义 API URL
+4. （可选）输入自定义模型名称
+5. 保存设置
+
+### 注意事项
+
+- API URL 如果只输入基础地址（如 `https://api.example.com`），系统会自动添加 `/v1/chat/completions` 路径
+- 如果 API URL 已包含完整路径，则直接使用
+- 模型名称必须与所选 API 服务支持的模型名称一致
+- 使用第三方服务时，请确保该服务完全兼容 OpenAI API 格式
 
 ---
 
