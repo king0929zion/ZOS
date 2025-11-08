@@ -1,4 +1,4 @@
-﻿package com.browseros.android.browser;
+ackage com.browseros.android.browser;
 
 import android.content.Context;
 import android.content.SharedPreferences;
