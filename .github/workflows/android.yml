@@ -32,10 +32,11 @@ jobs:
           components: platform-tools
 
       - name: Setup Signing Key
-        if: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
-          chmod 600 release.keystore
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+            chmod 600 release.keystore
+          fi
 
       - name: Gradle Assemble Release
         uses: gradle/gradle-build-action@v2
