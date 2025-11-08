@@ -44,7 +44,7 @@
             android:layout_height="64dp"
             android:layout_weight="1"
             app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="28dp"
+            app:cardCornerRadius="12dp"
             app:strokeColor="@color/dividerSoft"
             app:strokeWidth="1dp">
 
@@ -95,7 +95,7 @@
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            app:cornerRadius="999dp"
+            app:cornerRadius="12dp"
             app:icon="@drawable/ic_sparkles"
             app:iconGravity="textStart"
             app:iconPadding="8dp"
@@ -167,7 +167,7 @@
             android:layout_weight="1"
             android:alignmentMode="alignMargins"
             android:columnCount="3"
-            android:rowCount="3"
+            android:rowCount="5"
             android:useDefaultMargins="true" />
     </LinearLayout>
 

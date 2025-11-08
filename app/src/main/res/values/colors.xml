@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#1A8CA8</color>
-    <color name="colorPrimaryDark">#0E5F73</color>
-    <color name="colorAccent">#2AA382</color>
+    <!-- 主色调：深蓝灰色（替代靛蓝色） -->
+    <color name="colorPrimary">#2563EB</color>
+    <color name="colorPrimaryDark">#1E40AF</color>
+    <color name="colorAccent">#10B981</color>
+    
+    <!-- 表面颜色 -->
     <color name="surface">#FFFFFF</color>
-    <color name="surfaceAlt">#F4F7F8</color>
+    <color name="surfaceAlt">#F8FAFC</color>
+    <color name="surfaceVariant">#F1F5F9</color>
+    
+    <!-- 文本颜色 -->
     <color name="textPrimary">#0F172A</color>
-    <color name="textSecondary">#4C5C68</color>
-    <color name="dividerSoft">#1A2E3612</color>
-    <color name="overlayDark">#990C1820</color>
-    <color name="chipBackground">#E5F2F4</color>
-    <color name="chipStroke">#1A8CA826</color>
+    <color name="textSecondary">#64748B</color>
+    <color name="textTertiary">#94A3B8</color>
+    
+    <!-- 边框和分割线 -->
+    <color name="dividerSoft">#E2E8F0</color>
+    <color name="dividerMedium">#CBD5E1</color>
+    
+    <!-- 遮罩层 -->
+    <color name="overlayDark">#80000000</color>
+    <color name="overlayLight">#40FFFFFF</color>
+    
+    <!-- Chip 颜色 -->
+    <color name="chipBackground">#EFF6FF</color>
+    <color name="chipStroke">#2563EB</color>
+    <color name="chipText">#1E40AF</color>
+    
+    <!-- 状态颜色 -->
+    <color name="success">#10B981</color>
+    <color name="error">#EF4444</color>
+    <color name="warning">#F59E0B</color>
+    <color name="info">#3B82F6</color>
 </resources>
 

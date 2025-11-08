@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isMenuOpen = false;
     private boolean isAiOpen = false;
     private boolean isDesktopMode = false;
+    private boolean isIncognitoMode = false;
     private String mobileUserAgent;
     private final Pattern urlPattern = Patterns.WEB_URL;
 
@@ -236,7 +237,11 @@ public class MainActivity extends AppCompatActivity {
                 new MenuAction(MenuActionType.BOOKMARKS, R.drawable.ic_bookmarks, R.string.menu_bookmarks, R.string.menu_bookmarks_desc),
                 new MenuAction(MenuActionType.HOME, R.drawable.ic_home, R.string.menu_home, R.string.menu_home_desc),
                 new MenuAction(MenuActionType.BACK, R.drawable.ic_back, R.string.menu_back, R.string.menu_back_desc),
-                new MenuAction(MenuActionType.SETTINGS, R.drawable.ic_settings, R.string.menu_settings, R.string.menu_settings_desc)
+                new MenuAction(MenuActionType.SETTINGS, R.drawable.ic_settings, R.string.menu_settings, R.string.menu_settings_desc),
+                new MenuAction(MenuActionType.INCOGNITO, R.drawable.ic_incognito, R.string.menu_incognito, R.string.menu_incognito_desc),
+                new MenuAction(MenuActionType.SHARE, R.drawable.ic_share, R.string.menu_share, R.string.menu_share_desc),
+                new MenuAction(MenuActionType.FIND, R.drawable.ic_find, R.string.menu_find, R.string.menu_find_desc),
+                new MenuAction(MenuActionType.INFO, R.drawable.ic_info, R.string.menu_info, R.string.menu_info_desc)
         };
 
         for (MenuAction action : actions) {
@@ -349,6 +354,18 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case SETTINGS:
                 startActivity(new Intent(this, com.browseros.android.ui.SettingsActivity.class));
+                break;
+            case INCOGNITO:
+                toggleIncognitoMode();
+                break;
+            case SHARE:
+                sharePage();
+                break;
+            case FIND:
+                findInPage();
+                break;
+            case INFO:
+                showPageInfo();
                 break;
         }
     }
@@ -783,6 +800,107 @@ public class MainActivity extends AppCompatActivity {
     private void showToast(@StringRes int resId) {
         Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
     }
+    
+    /**
+     * 切换无痕浏览模式
+     */
+    private void toggleIncognitoMode() {
+        isIncognitoMode = !isIncognitoMode;
+        if (isIncognitoMode) {
+            // 清除当前会话数据
+            if (webView != null) {
+                webView.clearCache(true);
+                webView.clearHistory();
+            }
+            showToast(R.string.toast_incognito_on);
+        } else {
+            showToast(R.string.toast_incognito_off);
+        }
+    }
+    
+    /**
+     * 分享当前页面
+     */
+    private void sharePage() {
+        if (browserEngine == null || TextUtils.isEmpty(browserEngine.getUrl())) {
+            showToast(R.string.toast_no_url_to_share);
+            return;
+        }
+        
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, browserEngine.getTitle());
+        shareIntent.putExtra(Intent.EXTRA_TEXT, browserEngine.getUrl());
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+    }
+    
+    /**
+     * 在页面中查找文本
+     */
+    private void findInPage() {
+        if (webView == null) {
+            showToast(R.string.toast_webview_not_ready);
+            return;
+        }
+        
+        // 显示查找对话框
+        EditText input = new EditText(this);
+        input.setHint(getString(R.string.find_hint));
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.menu_find)
+                .setView(input)
+                .setPositiveButton(R.string.find, (dialog, which) -> {
+                    String query = input.getText().toString().trim();
+                    if (!query.isEmpty()) {
+                        webView.findAllAsync(query);
+                        webView.setFindListener((activeMatchOrdinal, numberOfMatches, isDoneCounting) -> {
+                            if (isDoneCounting && numberOfMatches > 0) {
+                                webView.findNext(true);
+                                showToast(getString(R.string.find_results, activeMatchOrdinal + 1, numberOfMatches));
+                            } else if (isDoneCounting && numberOfMatches == 0) {
+                                showToast(R.string.find_no_results);
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+    
+    /**
+     * 显示页面信息
+     */
+    private void showPageInfo() {
+        if (browserEngine == null) {
+            showToast(R.string.toast_webview_not_ready);
+            return;
+        }
+        
+        String url = browserEngine.getUrl();
+        String title = browserEngine.getTitle();
+        
+        if (TextUtils.isEmpty(url)) {
+            showToast(R.string.toast_no_page_info);
+            return;
+        }
+        
+        StringBuilder info = new StringBuilder();
+        info.append(getString(R.string.info_title)).append(": ").append(
+                TextUtils.isEmpty(title) ? getString(R.string.info_no_title) : title).append("\n\n");
+        info.append(getString(R.string.info_url)).append(": ").append(url).append("\n\n");
+        
+        if (webView != null) {
+            android.webkit.WebSettings settings = webView.getSettings();
+            info.append(getString(R.string.info_user_agent)).append(": ").append(settings.getUserAgentString()).append("\n\n");
+            info.append(getString(R.string.info_js_enabled)).append(": ").append(settings.getJavaScriptEnabled() ? getString(R.string.yes) : getString(R.string.no)).append("\n");
+        }
+        
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.menu_info)
+                .setMessage(info.toString())
+                .setPositiveButton(R.string.ok, null)
+                .show();
+    }
 
     @Override
     public void onBackPressed() {
@@ -810,7 +928,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private enum MenuActionType {
-        HISTORY, REFRESH, DOWNLOADS, DESKTOP, ADD_BOOKMARK, BOOKMARKS, HOME, BACK, SETTINGS
+        HISTORY, REFRESH, DOWNLOADS, DESKTOP, ADD_BOOKMARK, BOOKMARKS, HOME, BACK, SETTINGS,
+        INCOGNITO, SHARE, FIND, INFO
     }
 
     private static class MenuAction {

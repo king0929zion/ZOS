@@ -45,6 +45,14 @@
     <string name="menu_back_desc">回到上一步</string>
     <string name="menu_settings">设置</string>
     <string name="menu_settings_desc">偏好与密钥</string>
+    <string name="menu_incognito">无痕浏览</string>
+    <string name="menu_incognito_desc">隐私模式</string>
+    <string name="menu_share">分享</string>
+    <string name="menu_share_desc">分享当前页面</string>
+    <string name="menu_find">查找</string>
+    <string name="menu_find_desc">在页面中搜索</string>
+    <string name="menu_info">页面信息</string>
+    <string name="menu_info_desc">查看页面详情</string>
 
     <string name="ai_panel_title">BrowserOS AI</string>
     <string name="ai_panel_subtitle">多模态控制中心</string>
@@ -101,4 +109,24 @@
     <string name="chip_mobile_mode">移动模式</string>
     <string name="chip_scroll_down">下移</string>
     <string name="chip_scroll_up">上移</string>
+    
+    <string name="toast_incognito_on">已启用无痕浏览模式</string>
+    <string name="toast_incognito_off">已关闭无痕浏览模式</string>
+    <string name="toast_no_url_to_share">没有可分享的页面</string>
+    <string name="toast_webview_not_ready">页面未准备好</string>
+    <string name="toast_no_page_info">无法获取页面信息</string>
+    
+    <string name="find_hint">输入要查找的文本</string>
+    <string name="find">查找</string>
+    <string name="find_results">找到 %1$d / %2$d</string>
+    <string name="find_no_results">未找到匹配项</string>
+    
+    <string name="info_title">标题</string>
+    <string name="info_url">网址</string>
+    <string name="info_user_agent">用户代理</string>
+    <string name="info_js_enabled">JavaScript</string>
+    <string name="info_no_title">无标题</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="ok">确定</string>
 </resources>
